@@ -7,6 +7,7 @@
 #include <Pad.h>
 #include <Bounce.h>
 #include <Step.h>
+#include <LightsOut.h>
 
 #include <trellismap.h>
 #include <Adafruit_Trellis.h>
@@ -25,6 +26,7 @@
 #define MODE_PAD    		0
 #define MODE_BOUNCE			1
 #define MODE_STEP 			2
+#define MODE_LIGHTSOUT 		15
 
 #define MODE_NUMBER 		16
 
@@ -82,7 +84,7 @@ void setup(){
 
 	//Set the intervales of notes, using pad mode (bass down, from left to right)
 	setNoteInterval(60, 1);
-
+/*
 	// light up all the LEDs in order
 	for (uint8_t i=0; i<16; i++) {
 		trellis.setLED(i);
@@ -95,6 +97,44 @@ void setup(){
 		trellis.clrLED(i);
 		trellis.writeDisplay();    
 		delay(20);
+	}
+*/
+	for (byte i = 0; i < 7; i++){
+		trellis.clear();
+		switch(i){
+			case 0:
+				trellis.setLED(i);
+				break;
+			case 1:
+				trellis.setLED(i);
+				trellis.setLED(i + 3);
+				break;
+			case 2:
+				trellis.setLED(i);
+				trellis.setLED(i + 3);
+				trellis.setLED(i + 6);
+				break;
+			case 3:
+				trellis.setLED(i);
+				trellis.setLED(i + 3);
+				trellis.setLED(i + 6);
+				trellis.setLED(i + 9);
+				break;
+			case 4:
+				trellis.setLED(i + 3);
+				trellis.setLED(i + 6);
+				trellis.setLED(i + 9);
+				break;
+			case 5:
+				trellis.setLED(i + 6);
+				trellis.setLED(i + 9);
+				break;
+			case 6:
+				trellis.setLED(i + 9);
+				break;
+		}
+		trellis.writeDisplay();
+		delay(100);
 	}
 
 	//Call the main menu to select a sound.
@@ -221,6 +261,9 @@ void mainMenu(){
 					wheel.attach(changeSpeed);
 
 					moduleMode = MODE_BOUNCE;
+					//Clear the display
+					trellis.clear();
+					trellis.writeDisplay();
 					break;
 				}
 			case MODE_STEP:
@@ -234,6 +277,22 @@ void mainMenu(){
 					wheel.attach(changeSpeed);
 
 					moduleMode = MODE_STEP;
+					//Clear the display
+					trellis.clear();
+					trellis.writeDisplay();
+					break;
+				}
+			case MODE_LIGHTSOUT:
+				{
+					interface.begin(&trellis, 12, 4);
+
+					LightsOut *lout = new LightsOut();
+					lout->begin(&synth, &interface, &notes);
+					module = lout;
+
+					wheel.attach(changeOffsetX);
+
+					moduleMode = MODE_LIGHTSOUT;
 					break;
 				}
 			//default is pad mode
@@ -249,14 +308,15 @@ void mainMenu(){
 					wheel.attach(changeOctave);
 
 					moduleMode = MODE_PAD;
+					//Clear the display
+					trellis.clear();
+					trellis.writeDisplay();
+
 					break;
 				}
 			}
 	}
 
-	//Clear the display
-	trellis.clear();
-	trellis.writeDisplay();
 	//and wait for the button to be unpressed, otherwhile it calls the voice menu when exiting this one.
 	while(button.isPressed()){
 		button.update();
